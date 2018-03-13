@@ -1,0 +1,128 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<project name="VIPChannel" default="build">
+    <target name="build" depends="make_runtime,pdepend,phpmd,phpcpd,test,check,tar"/>
+    <property name="version-m"  value="1.1" />
+    <property name="version"    value="1.1.0" />
+    <property name="stability"  value="stable" />
+    <property name="releasenotes" value="" />
+    <property name="tarfile"     value="${phing.project.name}.${buildnumber}.${buildid}.tar.gz" />
+    <property name="pkgfile"     value="${phing.project.name}.${version}.tgz" />
+    <property name="distfile"    value="dist/${tarfile}" />
+    <property name="tests.dir" value="." />
+    <!--####程序的目录（根据实际情况更改）-->
+    <fileset id="VIPChannel.tar.gz" dir=".">
+        <!--<include name="admin/**"/>-->
+        <!--<include name="api/**"/>-->
+        <include name="assets/**"/>
+        <include name="config/**"/>
+        <include name="controllers/**"/>
+        <include name="views/**"/>
+        <include name="web/**"/>
+        <include name="runtime/**"/>
+        <!--<include name="chatapi/**"/>-->
+        <!--<include name="classapi/**"/>-->
+        <!--<include name="classapi1/**"/>-->
+        <!--<include name="classxstu/**"/>-->
+        <include name="common/**"/>
+        <include name="console/**"/>
+        <!--<include name="crm/**"/>-->
+        <!--<include name="pnlweb/**"/>-->
+        <!--<include name="environments/**"/>-->
+        <!--<include name="operation/**"/>-->
+        <!--<include name="rabbitMQ/**"/>-->
+        <!--<include name="student/**"/>-->
+        <!--<include name="swoole/**"/>-->
+        <!--<include name="teacher/**"/>-->
+        <!--<include name="tests/**"/>-->
+        <!--<include name="vagrant/**"/>-->
+        <include name="vendor/**"/>
+        <include name="composer.json"/>
+        <include name="composer.lock"/>
+        <include name="LICENSE.md"/>
+        <!--<include name="rab-reg.php"/>-->
+        <include name="readme.md"/>
+        <!--<include name="swl-reg.php"/>-->
+        <!--<include name="Vagrantfile"/>-->
+        <include name="yii"/>
+        <include name="yii-reg.php"/>
+        <include name="simhei.ttf"/>
+        <include name="env.php" />
+        <!--<include name="start-local.php" />-->
+        <!--<include name="stop-local.php" />-->
+        <include name="vip_logo.jpg"/>
+        <!--<include name="rab"/>-->
+        <!--<exclude name="admin/web/index.php" />-->
+       	<!--<exclude name="api/web/index.php" />-->
+        <!--<exclude name="channel/web/index.php" />-->
+        <!--<exclude name="chatapi/web/index.php" />-->
+        <!--<exclude name="classapi/web/index.php" />-->
+        <!--<exclude name="classapi1/web/index.php" />-->
+        <!--<exclude name="crm/web/index.php" />-->
+        <!--<exclude name="operation/web/index.php" />-->
+        <!--<exclude name="student/web/index.php" />-->
+        <!--<exclude name="teacher/web/index.php" />-->
+    </fileset>
+    <!--####集成构建相关配置-->
+    <target name="make_runtime">
+        <mkdir dir="${project.basedir}/Runtime" />
+        <mkdir dir="${project.basedir}/build/logs" />
+        <mkdir dir="${project.basedir}/build/pdepend" />
+        <mkdir dir="${project.basedir}/build/code-browser" />
+    </target>
+    <!--####php代码规模分析工具配置-->
+    <target name="pdepend" description="Calculate software metrics using PHP_Depend">
+        <exec executable="pdepend">
+            <arg value="--jdepend-xml=${project.basedir}/build/logs/jdepend.xml"/>
+            <arg value="--jdepend-chart=${project.basedir}/build/pdepend/dependencies.svg"/>
+            <arg value="--overview-pyramid=${project.basedir}/build/pdepend/overview-pyramid.svg"/>
+            <arg path="${project.basedir}/"/>
+        </exec>
+    </target>
+    <!--####php代码静态检查工具配置-->
+    <target name="phpmd" description="Perform project mess detection using PHPMD">
+        <phpmd>
+            <fileset dir="${project.basedir}">
+                <include name="student/*.php" />
+                <include name="*.php" />
+            </fileset>
+        </phpmd>
+    </target>
+    <!--####php代码分析工具配置-->
+    <target name="phpcpd" description="Find duplicate code using PHPCPD">
+        <phpcpd>
+            <fileset dir="${project.basedir}">
+                <include name="*.php" />
+            </fileset>
+            <formatter type="pmd" outfile="pmd-cpd.xml"/>
+        </phpcpd>
+    </target>
+    <!--####php单例测试配置-->
+    <target name="phpunit" description="Run unit tests with PHPUnit">
+        <exec executable="phpunit" />
+    </target>
+    <target name="test" description="Run PHPUnit tests">
+        <phpunit haltonerror="true" haltonfailure="true" printsummary="true">
+            <batchtest>
+                <fileset dir="${tests.dir}">
+                    <include name="**/*.php" />
+                </fileset>
+            </batchtest>
+        </phpunit>
+    </target>
+    <!--####构建参数配置-->
+    <target name="check" description="Check variables" >
+        <fail unless="version" message="Version not defined!" />
+        <fail unless="buildnumber" message="buildnumber not defined!" />
+        <fail unless="buildid" message="buildid not defined!" />
+        <delete dir="dist" failonerror="false" />
+        <mkdir dir="dist" />
+    </target>
+    <!--####构建参数配置-->
+    <target name="tar" depends="check" description="Create tar file for release">
+        <echo msg="Creating distribution tar for ${phing.project.name} ${version}"/>
+        <delete file="${distfile}" failonerror="false"/>
+        <tar destfile="${distfile}" compression="gzip">
+            <fileset refid="VIPChannel.tar.gz"/>
+        </tar>
+    </target>
+</project>
